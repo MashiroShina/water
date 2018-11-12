@@ -5,6 +5,8 @@
 		[NoScaleOffset] _FlowMap ("Flow (RG,A noise)",2D) = "black" {}
 		_UJump ("U jump per phase", Range(-0.25, 0.25)) = 0.25
 		_VJump ("V jump per phase", Range(-0.25, 0.25)) = 0.25
+		_Tiling ("Tiling", Float) = 1
+		_Speed ("Speed", Float) = 1
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 	}
@@ -20,7 +22,7 @@
 
 		sampler2D _MainTex, _FlowMap;
 		float _UJump, _VJump;
-		//float _Tiling;
+		float _Tiling, _Speed;
 
 		struct Input {
 			float2 uv_MainTex;
@@ -31,16 +33,16 @@
 		fixed4 _Color;
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			//float2 flowVector = tex2D(_FlowMap, IN.uv_MainTex).rg * 2 - 1;
+			//float2 flowVector = 0;
 			//float2 uv = FlowUV(IN.uv_MainTex, flowVector, _Time.y);
 			float2 flowVector = tex2D(_FlowMap, IN.uv_MainTex).rg * 2 - 1;
 
 			float noise=tex2D(_FlowMap,IN.uv_MainTex);
-			float time=_Time.y+noise;
+			float time=_Time.y* _Speed+noise;
 
 			float2 jump = float2(_UJump, _VJump);
-			float3 uvwA = FlowUVW(IN.uv_MainTex, flowVector, jump ,time , false);
-			float3 uvwB = FlowUVW(IN.uv_MainTex, flowVector, jump ,time , true);
+			float3 uvwA = FlowUVW(IN.uv_MainTex, flowVector, jump ,_Tiling , time , false);
+			float3 uvwB = FlowUVW(IN.uv_MainTex, flowVector, jump ,_Tiling , time , true);
 
 			fixed4 texA = tex2D(_MainTex, uvwA.xy) * uvwA.z;
 			fixed4 texB = tex2D(_MainTex, uvwB.xy) * uvwB.z;
